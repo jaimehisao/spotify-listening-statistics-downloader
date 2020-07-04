@@ -1,7 +1,5 @@
 FROM python:3-alpine
 
-USER 9000:9000
-
 WORKDIR /usr/code/bot
 
 COPY requirements.txt ./

@@ -1,2 +1,6 @@
 schedule
 psycopg2
+python-dotenv
+schedule
+spotipy
+sentry_sdk

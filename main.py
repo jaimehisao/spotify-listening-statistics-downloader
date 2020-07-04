@@ -117,8 +117,8 @@ def query():
 
     # Spotify Login Object
     scope = 'user-library-read user-read-recently-played'
-    client_credentials_manager = SpotifyClientCredentials(client_id="***REMOVED***",
-                                                          client_secret="***REMOVED***")
+    client_credentials_manager = SpotifyClientCredentials(client_id=client_id,
+                                                          client_secret=client_secret)
     token = util.prompt_for_user_token("jaimehisao", scope)
     # sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
     # sp = spotipy.client.Spotify(auth = token, client_credentials_manager=client_credentials_manager)
@@ -188,6 +188,7 @@ def mongo_to_postgres():
             print(recordsRemoved)
     conn.close()
     mongoClient.close()
+
 
 print('Starting Spotify Downloader')
 schedule.every().hour.do(query)

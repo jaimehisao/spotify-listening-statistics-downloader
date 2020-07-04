@@ -1,0 +1,24 @@
+language: python
+python:
+  - 3.6
+services:
+  - postgresql
+  - docker
+before_install:
+  - python --version
+  - pip install -r requirements.txt
+  - pip install -U pip
+  - pip install -U pytest
+  - pip install codecov
+  #install:
+  # - pip install ".[test]" . # install package + test dependencies
+script:
+  - pytest # run tests
+  - docker build -t spotify-listening-statistics .
+after_success:
+  - codecov # submit coverage
+  - docker login docker.pkg.github.com -u $USERNAME --password $TOKEN
+  - docker tag tweetbot docker.pkg.github.com/jaimehisao/spotify-listening-statistics/spotify-listening-statistics:latest
+  - docker push docker.pkg.github.com/jaimehisao/spotify-listening-statistics/spotify-listening-statistics:latest
+  - docker tag tweetbot docker.pkg.github.com/jaimehisao/spotify-listening-statistics/spotify-listening-statistics:$TRAVIS_BUILD_NUMBER
+  - docker push docker.pkg.github.com/jaimehisao/spotify-listening-statistics/spotify-listening-statistics:$TRAVIS_BUILD_NUMBER

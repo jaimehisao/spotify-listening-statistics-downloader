@@ -2,6 +2,7 @@ import sys
 import os
 import spotipy
 import pprint
+from spotipy.oauth2 import SpotifyOAuth
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy.util as util
 import psycopg2
@@ -11,6 +12,7 @@ import schedule
 import time
 from dotenv import load_dotenv
 import sentry_sdk
+import pymongo
 
 load_dotenv()
 
@@ -48,6 +50,9 @@ def add_album_if_non_existent(album, conn, cursor):
 
     if album_release_date_precision == 'year':
         album_release_date = album_release_date + '-01-01 00:00:00.000000'
+
+    if album_release_date_precision == 'month':
+        album_release_date = album_release_date + '-01 00:00:00.000000'
 
     cursor.execute('INSERT INTO albums(id, name, release_date, release_date_precision, total_tracks, '
                    'uri) VALUES(%s, %s, %s, %s, %s, %s)',
@@ -106,9 +111,14 @@ def query():
     client_secret = os.getenv("SPOTIPY_CLIENT_SECRET")
     redirect = os.getenv("SPOTIPY_REDIRECT_URI")
 
+    os.environ["SPOTIPY_CLIENT_ID"] = client_id
+    os.environ["SPOTIPY_CLIENT_SECRET"] = client_secret
+    os.environ["SPOTIPY_REDIRECT_URI"] = redirect
+
     # Spotify Login Object
     scope = 'user-library-read user-read-recently-played'
-    client_credentials_manager = SpotifyClientCredentials(client_id, client_secret)
+    client_credentials_manager = SpotifyClientCredentials(client_id="***REMOVED***",
+                                                          client_secret="***REMOVED***")
     token = util.prompt_for_user_token("jaimehisao", scope)
     # sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
     # sp = spotipy.client.Spotify(auth = token, client_credentials_manager=client_credentials_manager)
@@ -141,12 +151,48 @@ def query():
             print('Added new track history : ' + str(item['track']['name']) + ' ' + str(item['played_at']))
     conn.commit()
 
-query()
+
+def mongo_to_postgres():
+    # Log into Postgres database
+    conn = psycopg2.connect(user="spotifyu",
+                            password="spotifyT343432434@",
+                            host="services.hisao.org",
+                            port="5432",
+                            database="spotify")
+    cursor = conn.cursor()
+
+    mongoClient = pymongo.MongoClient("mongodb://services.hisao.org:27017/")
+
+    # Select MongoDB Database and Collection
+    mydb = mongoClient["music"]
+    statsCol = mydb["listeningStats"]
+
+    recordsRemoved = 0
+
+    conn.rollback()
+
+    tracks = statsCol.find({})
+
+    for track in tracks:
+        cursor.execute('SELECT * FROM track WHERE id = %s', (track['trackId'],))
+        if len(cursor.fetchall()) != 0:
+            recordsRemoved += 1
+            print(track['trackId'] + ' ' + track['timestamp'])
+            cursor.execute('SELECT * FROM track_history WHERE track_id = %s and played_at = %s',
+                           (track['trackId'], track['timestamp']))
+            if len(cursor.fetchall()) == 0:
+                cursor.execute('INSERT INTO track_history(track_id, played_at) VALUES (%s, %s)',
+                               (track['trackId'], track['timestamp']))
+            statsCol.delete_one({'_id': track['_id']})
+            conn.commit()
+            print(recordsRemoved)
+    conn.close()
+    mongoClient.close()
 
 
-print('Starting Spotify Downloader')
-#schedule.every().hour.do(query)
+schedule.every().hour.do(query)
+schedule.every().hour.at(":02").do(mongo_to_postgres)
 
-#while True:
-    #schedule.run_pending()
-    #time.sleep(1)
+while True:
+    schedule.run_pending()
+    time.sleep(1)

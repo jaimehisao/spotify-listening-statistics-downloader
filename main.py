@@ -142,6 +142,9 @@ def query():
     conn.commit()
 
 query()
+
+
+print('Starting Spotify Downloader')
 #schedule.every().hour.do(query)
 
 #while True:

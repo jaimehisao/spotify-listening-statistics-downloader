@@ -15,12 +15,11 @@ before_install:
   #install:
   # - pip install ".[test]" . # install package + test dependencies
 script:
-  - pytest # run tests
-  - docker build -t spotify-listening-statistics .
+  #- pytest # run tests
+  - docker build -t listening-statistics .
 after_success:
-  - codecov # submit coverage
   - docker login docker.pkg.github.com -u $USERNAME --password $TOKEN
-  - docker tag spotify-listening-statistics docker.pkg.github.com/jaimehisao/spotify-listening-statistics/spotify-listening-statistics:latest
-  - docker push docker.pkg.github.com/jaimehisao/spotify-listening-statistics/spotify-listening-statistics:latest
-  - docker tag spotify-listening-statistics docker.pkg.github.com/jaimehisao/spotify-listening-statistics/spotify-listening-statistics:$TRAVIS_BUILD_NUMBER
-  - docker push docker.pkg.github.com/jaimehisao/spotify-listening-statistics/spotify-listening-statistics:$TRAVIS_BUILD_NUMBER
+  - docker tag listening-statistics docker.pkg.github.com/jaimehisao/spotify-listening-statistics/listening-statistics:$TRAVIS_BUILD_NUMBER
+  - docker push docker.pkg.github.com/jaimehisao/spotify-listening-statistics/listening-statistics:$TRAVIS_BUILD_NUMBER
+  - docker tag listening-statistics docker.pkg.github.com/jaimehisao/spotify-listening-statistics/listening-statistics:latest
+  - docker push docker.pkg.github.com/jaimehisao/spotify-listening-statistics/listening-statistics:latest

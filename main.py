@@ -189,7 +189,7 @@ def mongo_to_postgres():
     conn.close()
     mongoClient.close()
 
-
+print('Starting Spotify Downloader')
 schedule.every().hour.do(query)
 schedule.every().hour.at(":02").do(mongo_to_postgres)
 

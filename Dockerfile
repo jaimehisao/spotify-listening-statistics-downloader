@@ -1,6 +1,6 @@
 FROM python:3-alpine
 
-WORKDIR /usr/code/bot
+WORKDIR /usr/code/spotify
 
 COPY requirements.txt ./
 

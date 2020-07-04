@@ -33,7 +33,7 @@ def add_artist_if_non_existent(artist, conn, cursor):
         # Add the artist to the DB since it does not exist yet.
         cursor.execute('INSERT INTO artists(id, name, uri) VALUES (%s, %s, %s)',
                        (artist_id_track, artist_name_track, artist_uri_track))
-        print('Added a new track: ' + artist_name_track)
+        print('Added a new artist: ' + artist_name_track)
     conn.commit()
 
 
@@ -64,6 +64,7 @@ def add_album_if_non_existent(album, conn, cursor):
             cursor.execute('INSERT INTO album_artist(album_id, artist_id) VALUES (%s, %s)',
                            (album_id, str(artist['id'])))
             print('Added a new artist: ' + str(artist['name']))
+            conn.commit()
     conn.commit()
 
 
@@ -140,9 +141,9 @@ def query():
             print('Added new track history : ' + str(item['track']['name']) + ' ' + str(item['played_at']))
     conn.commit()
 
+query()
+#schedule.every().hour.do(query)
 
-schedule.every().hour.do(query)
-
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+#while True:
+    #schedule.run_pending()
+    #time.sleep(1)

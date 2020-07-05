@@ -1,13 +1,9 @@
-import sys
 import os
 import spotipy
-import pprint
-from spotipy.oauth2 import SpotifyOAuth
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy.util as util
 import psycopg2
 import types
-import uuid
 import schedule
 import time
 from dotenv import load_dotenv
@@ -24,7 +20,14 @@ def current_user_recently_played(self, limit=1):
     return self._get('me/player/recently-played', limit=limit)
 
 
-def add_artist_if_non_existent(artist, conn, cursor):
+def add_artist_if_non_existent(artist, conn, cursor) -> None:
+    """
+    Adds an artist object to the database if it didn't exist. Since its a requirement to add an album and track.
+    :param artist: Artist JSON from Spotify API (only the artist part)
+    :param conn: PostgreSQL Connection Object
+    :param cursor: PostgreSQL Cursor Object
+    :return: None
+    """
     artist_name_track = str(artist['name'])
     artist_id_track = str(artist['id'])
     artist_uri_track = str(artist['uri'])
@@ -39,7 +42,14 @@ def add_artist_if_non_existent(artist, conn, cursor):
     conn.commit()
 
 
-def add_album_if_non_existent(album, conn, cursor):
+def add_album_if_non_existent(album, conn, cursor) -> None:
+    """
+    Adds an album object to the database if it didn't exist. Since its a requirement to add a track.
+    :param album: Album JSON from Spotify API (only the album part)
+    :param conn: PostgreSQL Connection Object
+    :param cursor: PostgreSQL Cursor Object
+    :return: None
+    """
     # Album Information
     album_id = str(album['id'])
     album_name = str(album['name'])
@@ -73,7 +83,14 @@ def add_album_if_non_existent(album, conn, cursor):
     conn.commit()
 
 
-def add_track_if_non_existant(track, conn, cursor):
+def add_track_if_non_existant(track, conn, cursor) -> None:
+    """
+    Adds a track information to the database if non existant. Requirement for adding a track_history
+    :param track: Track JSON object from Spotify API
+    :param conn: PostgreSQL connection object
+    :param cursor: PostgreSQL cursor object
+    :return: None
+    """
     # Add artist information from Track
     for artist in track['artists']:
         # Checks if the artist has been added to the DB
@@ -99,7 +116,11 @@ def add_track_if_non_existant(track, conn, cursor):
                    (track_id, str(artist['id'])))
 
 
-def query():
+def query() -> None:
+    """
+    Method that calls the Spotify API and retrieves the user's last 50 songs and adds them to the database in Postgres.
+    :return: None
+    """
     # Log into Postgres database
     conn = psycopg2.connect(user="spotifyu",
                             password="spotifyT343432434@",
@@ -114,13 +135,8 @@ def query():
 
     # Spotify Login Object
     scope = 'user-library-read user-read-recently-played'
-    client_credentials_manager = SpotifyClientCredentials(client_id=client_id,
-                                                          client_secret=client_secret)
     token = util.prompt_for_user_token("jaimehisao", scope)
-    # sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-    # sp = spotipy.client.Spotify(auth = token, client_credentials_manager=client_credentials_manager)
     sp = spotipy.Spotify(auth=token)
-    # Insert to PostgreSQL database
     sp.current_user_recently_played = types.MethodType(current_user_recently_played, sp)
     recent = sp.current_user_recently_played(limit=50)
 
@@ -148,7 +164,13 @@ def query():
     conn.commit()
 
 
-def mongo_to_postgres():
+def mongo_to_postgres() -> None:
+    """
+    Method that moves songs from the previous MongoDB to the new PostgreSQL database. Taking into account the database
+    constraints. As tracks are added to Postgres, this method scans MongoDB and adds that track history to the new DB
+    and removes the records from the old database.
+    :return: None
+    """
     # Log into Postgres database
     conn = psycopg2.connect(user="spotifyu",
                             password="spotifyT343432434@",
@@ -185,6 +207,7 @@ def mongo_to_postgres():
     conn.close()
     mongoClient.close()
     print("Finished Mongo -> Postgres", flush=True)
+
 
 print('Starting Spotify Downloader')
 print("Hello? Anyone there?", flush=True)

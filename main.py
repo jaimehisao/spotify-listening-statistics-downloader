@@ -146,6 +146,7 @@ def query():
             cursor.execute('INSERT INTO track_history(track_id, played_at) VALUES (%s, %s)',
                            (str(item['track']['id']), str(item['played_at'])))
             print('Added new track history : ' + str(item['track']['name']) + ' ' + str(item['played_at']))
+    print("Finished adding new track history", flush=True)
     conn.commit()
 
 
@@ -185,6 +186,7 @@ def mongo_to_postgres():
             print(recordsRemoved)
     conn.close()
     mongoClient.close()
+    print("Finished Mongo -> Postgres", flush=True)
 
 print('Starting Spotify Downloader')
 print("Hello? Anyone there?", flush=True)

@@ -86,13 +86,14 @@ def add_track_if_non_existant(track, conn, cursor):
     track_id = str(track['id'])
     track_popularity = str(track['popularity'])
     track_duration_ms = str(track['duration_ms'])
+    track_album_id = str(track['album']['id'])
     track_explicit = False
     if str(track['explicit']):
         track_explicit = True
 
-    cursor.execute('INSERT INTO track(id, name, duration_ms, explicit, popularity) '
-                   'VALUES (%s, %s, %s, %s, %s) ',
-                   (track_id, track_name, track_duration_ms, track_explicit, track_popularity))
+    cursor.execute('INSERT INTO track(id, name, duration_ms, explicit, popularity, album_id) '
+                   'VALUES (%s, %s, %s, %s, %s, %s) ',
+                   (track_id, track_name, track_duration_ms, track_explicit, track_popularity, track_album_id))
     print('Added new track: ' + track_name)
     cursor.execute('INSERT INTO track_artist(track_id, artist_id) VALUES (%s, %s)',
                    (track_id, str(artist['id'])))
@@ -107,8 +108,6 @@ def query():
                             database="spotify")
     cursor = conn.cursor()
 
-    print(conn)
-
     client_id = os.getenv("SPOTIPY_CLIENT_ID")
     client_secret = os.getenv("SPOTIPY_CLIENT_SECRET")
     redirect = os.getenv("SPOTIPY_REDIRECT_URI")
@@ -121,7 +120,6 @@ def query():
     # sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
     # sp = spotipy.client.Spotify(auth = token, client_credentials_manager=client_credentials_manager)
     sp = spotipy.Spotify(auth=token)
-    print('HERE')
     # Insert to PostgreSQL database
     sp.current_user_recently_played = types.MethodType(current_user_recently_played, sp)
     recent = sp.current_user_recently_played(limit=50)

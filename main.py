@@ -107,13 +107,11 @@ def query():
                             database="spotify")
     cursor = conn.cursor()
 
+    print(conn)
+
     client_id = os.getenv("SPOTIPY_CLIENT_ID")
     client_secret = os.getenv("SPOTIPY_CLIENT_SECRET")
     redirect = os.getenv("SPOTIPY_REDIRECT_URI")
-
-    os.environ["SPOTIPY_CLIENT_ID"] = client_id
-    os.environ["SPOTIPY_CLIENT_SECRET"] = client_secret
-    os.environ["SPOTIPY_REDIRECT_URI"] = redirect
 
     # Spotify Login Object
     scope = 'user-library-read user-read-recently-played'
@@ -123,13 +121,12 @@ def query():
     # sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
     # sp = spotipy.client.Spotify(auth = token, client_credentials_manager=client_credentials_manager)
     sp = spotipy.Spotify(auth=token)
-
+    print('HERE')
     # Insert to PostgreSQL database
     sp.current_user_recently_played = types.MethodType(current_user_recently_played, sp)
     recent = sp.current_user_recently_played(limit=50)
 
     for i, item in enumerate(recent['items']):
-
         # Checks if the album has been added to the DB
         cursor.execute('SELECT id FROM albums WHERE id = %s', (str(item['track']['album']['id']),))
         if len(cursor.fetchall()) == 0:
@@ -189,9 +186,9 @@ def mongo_to_postgres():
     conn.close()
     mongoClient.close()
 
-
 print('Starting Spotify Downloader')
-schedule.every().hour.do(query)
+print("Hello? Anyone there?", flush=True)
+schedule.every().hour.at(":16").do(query)
 schedule.every().hour.at(":02").do(mongo_to_postgres)
 
 while True:

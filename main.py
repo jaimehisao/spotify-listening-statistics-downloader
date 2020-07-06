@@ -1,4 +1,6 @@
 import os
+import pprint
+
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy.util as util
@@ -83,7 +85,7 @@ def add_album_if_non_existent(album, conn, cursor) -> None:
     conn.commit()
 
 
-def add_track_if_non_existant(track, conn, cursor) -> None:
+def add_track_if_non_existent(track, conn, cursor) -> None:
     """
     Adds a track information to the database if non existant. Requirement for adding a track_history
     :param track: Track JSON object from Spotify API
@@ -105,7 +107,7 @@ def add_track_if_non_existant(track, conn, cursor) -> None:
     track_duration_ms = str(track['duration_ms'])
     track_album_id = str(track['album']['id'])
     track_explicit = False
-    if str(track['explicit']):
+    if str(track['explicit']) == "True":
         track_explicit = True
 
     cursor.execute('INSERT INTO track(id, name, duration_ms, explicit, popularity, album_id) '
@@ -150,7 +152,7 @@ def query() -> None:
         cursor.execute('SELECT id FROM track WHERE id = %s', (str(item['track']['id']),))
         if len(cursor.fetchall()) == 0:
             # Add the track information since it's not in the DB
-            add_track_if_non_existant(item['track'], conn, cursor)
+            add_track_if_non_existent(item['track'], conn, cursor)
 
         # Check if the record of listening to the track exists in the DB
         cursor.execute('SELECT track_id FROM track_history WHERE track_id = %s  and played_at = %s',
@@ -209,6 +211,7 @@ def mongo_to_postgres() -> None:
     print("Finished Mongo -> Postgres", flush=True)
 
 
+query()
 print('Starting Spotify Downloader')
 print("Hello? Anyone there?", flush=True)
 schedule.every().hour.at(":16").do(query)

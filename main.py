@@ -257,8 +257,8 @@ def mongo_to_postgres() -> None:
 
 print("Starting Spotify Downloader")
 print("Hello? Anyone there?", flush=True)
-schedule.every().hour.at(":16").do(query)
-schedule.every().hour.at(":02").do(mongo_to_postgres)
+schedule.every().hour.at(":15").do(query)
+schedule.every().hour.at(":20").do(mongo_to_postgres)
 
 while True:
     schedule.run_pending()

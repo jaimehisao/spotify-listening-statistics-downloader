@@ -16,6 +16,10 @@ script:
   #- pytest # run tests
   - docker build -t listening-statistics-downloader .
 after_success:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker build -t spotify-listening-statistics-downloader .
+  - docker tag spotify-listening-statistics-downloader $DOCKER_USERNAME/spotify-listening-statistics-downloader
+  - docker push $DOCKER_USERNAME/spotify-listening-statistics-downloader
   - docker login docker.pkg.github.com -u $USERNAME --password $TOKEN
   - docker tag listening-statistics-downloader docker.pkg.github.com/jaimehisao/spotify-listening-statistics-downloader/listening-statistics-downloader:$TRAVIS_BUILD_NUMBER
   - docker push docker.pkg.github.com/jaimehisao/spotify-listening-statistics-downloader/listening-statistics-downloader:$TRAVIS_BUILD_NUMBER

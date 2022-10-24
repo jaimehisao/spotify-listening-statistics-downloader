@@ -134,12 +134,14 @@ def add_track_if_non_existent(track, conn, cursor) -> None:
             track_album_id,
         ),
     )
-    print("Added new track: " + track_name)
+    try:
+        print("Added new track: " + track_name)
+    except UnicodeEncodeError:
+        print("Error when printing debug output")
     cursor.execute(
         "INSERT INTO track_artist(track_id, artist_id) VALUES (%s, %s)",
         (track_id, str(artist["id"])),
-    )
-
+        )
 
 def query() -> None:
     """
@@ -148,9 +150,9 @@ def query() -> None:
     """
     # Log into Postgres database
     conn = psycopg2.connect(
-        user="spotifyu",
-        password="spotifyT343432434@",
-        host="services.hisao.org",
+        user="apps",
+        password="apps_for_postgres_prod",
+        host="100.105.109.22",
         port="5432",
         database="spotify",
     )
@@ -194,12 +196,16 @@ def query() -> None:
                 "INSERT INTO track_history(track_id, played_at) VALUES (%s, %s)",
                 (str(item["track"]["id"]), str(item["played_at"])),
             )
-            print(
-                "Added new track history : "
-                + str(item["track"]["name"])
-                + " "
-                + str(item["played_at"])
-            )
+            try:
+                print(
+                    "Added new track history : "
+                    + str(item["track"]["name"])
+                    + " "
+                    + item["played_at"]
+                )
+            except Exception as e:
+                print(e)
+                print("Error printing track history addition")
     print("Finished adding new track history", flush=True)
     conn.commit()
 
@@ -213,15 +219,15 @@ def mongo_to_postgres() -> None:
     """
     # Log into Postgres database
     conn = psycopg2.connect(
-        user="spotifyu",
-        password="spotifyT343432434@",
-        host="services.hisao.org",
+        user="apps",
+        password="apps_for_postgres_prod",
+        host="100.105.109.22",
         port="5432",
         database="spotify",
     )
     cursor = conn.cursor()
 
-    mongoClient = pymongo.MongoClient("mongodb://services.hisao.org:27017/")
+    mongoClient = pymongo.MongoClient("mongodb://100.105.109.22:27017/")
 
     # Select MongoDB Database and Collection
     mydb = mongoClient["music"]
@@ -257,8 +263,8 @@ def mongo_to_postgres() -> None:
 
 print("Starting Spotify Downloader")
 print("Hello? Anyone there?", flush=True)
-schedule.every().hour.at(":15").do(query)
-schedule.every().hour.at(":20").do(mongo_to_postgres)
+schedule.every().hour.at(":28").do(query)
+schedule.every().hour.at(":31").do(mongo_to_postgres)
 
 while True:
     schedule.run_pending()

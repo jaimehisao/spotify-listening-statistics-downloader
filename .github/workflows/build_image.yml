@@ -23,7 +23,7 @@ jobs:
 
       - name: Populate Spotify API Cache file
         env:
-          - SPOTIFY_CACHE_CONTENTS: ${{ secrets.SPOTIFY_CACHE_CONTENTS }}
+          SPOTIFY_CACHE_CONTENTS: ${{ secrets.SPOTIFY_CACHE_CONTENTS }}
         run: |
           echo "$SPOTIFY_CACHE_CONTENTS" >> .cache-jaimehisao
           echo "ls -a ."

@@ -1,16 +1,16 @@
-FROM python:3-alpine
+FROM ubuntu:latest
 
 WORKDIR /usr/code/spotify
+ENV DEBIAN_FRONTEND noninteractive
 
 COPY requirements.txt ./
 
-RUN \
- apk add --no-cache postgresql-libs && \
- apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev && \
- python3 -m pip install -r requirements.txt --no-cache-dir && \
- apk --purge del .build-deps
+RUN apt-get update \
+    && apt-get install -y python3 python3-pip postgresql postgresql-contrib libpq-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install -r requirements.txt
 
 COPY . .
 
-CMD [ "python", "main.py" ]
+CMD [ "python3", "main.py" ]
 

@@ -164,8 +164,8 @@ def query() -> None:
 
     # Spotify Login Object
     scope = "user-library-read user-read-recently-played"
-    token = util.prompt_for_user_token("jaimehisao", scope)
-    sp = spotipy.Spotify(auth=token)
+    auth_manager = SpotifyClientCredentials()
+    sp = spotipy.Spotify(auth_manager=spotipy.SpotifyOAuth(scope=scope))
     sp.current_user_recently_played = types.MethodType(current_user_recently_played, sp)
     recent = sp.current_user_recently_played(limit=50)
 

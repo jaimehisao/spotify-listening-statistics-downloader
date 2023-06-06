@@ -1,0 +1,14 @@
+kind: pipeline
+name: Build and Push 
+
+steps:
+- name: build image for spotify-listening-statistics-downloader
+  image: plugins/docker
+  settings:
+    username: admin
+    password: Harbor12345
+    repo: registry.internal.hisao.org/prod/spotify-listening-statistics-downloader
+    registry: registry.internal.hisao.org
+    dockerfile: Dockerfile
+    tags:
+    - latest
